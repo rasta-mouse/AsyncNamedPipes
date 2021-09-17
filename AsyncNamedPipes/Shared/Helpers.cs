@@ -2,15 +2,31 @@
 
 namespace Shared
 {
-    public static class Helpers
+    public class PipeState
     {
-        public static byte[] TrimBytes(this byte[] bytes)
+        public byte[] TempBuffer { get; }
+        public byte[] FinalBuffer { get; set; }
+
+        public PipeState()
         {
-            var index = bytes.Length - 1;
-            while (bytes[index] == 0) { index--; }
-            byte[] copy = new byte[index + 1];
-            Array.Copy(bytes, copy, index + 1);
-            return copy;
+            TempBuffer = new byte[1024];
+        }
+
+        public void SetFinal(int bytesRead)
+        {
+            FinalBuffer = new byte[bytesRead];
+            Array.Copy(TempBuffer, FinalBuffer, bytesRead);
+        }
+
+        public void ResizeBuffer(int bytesRead)
+        {
+            var currentData = FinalBuffer;
+            var currentSize = FinalBuffer.Length;
+                    
+            Array.Resize(ref currentData, currentSize + bytesRead);
+            Buffer.BlockCopy(TempBuffer, 0, currentData, currentSize, bytesRead);
+
+            FinalBuffer = currentData;
         }
     }
 }
